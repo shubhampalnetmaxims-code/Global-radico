@@ -11,6 +11,8 @@
     body {
       font-family: 'Inter', sans-serif;
       background-color: #f8fafc;
+      margin: 0;
+      padding: 0;
     }
   </style>
 <script type="importmap">
@@ -26,5 +28,7 @@
 </head>
 <body>
   <div id="root"></div>
+  <!-- Explicitly link index.tsx as a module to ensure it loads -->
+  <script type="module" src="./index.tsx"></script>
 </body>
 </html>
