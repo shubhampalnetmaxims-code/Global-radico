@@ -28,7 +28,7 @@ const portalTranslations = {
 
 const portals = [
   { id: 'admin', key: 'admin', path: '/admin/categories', icon: '🛡️', color: 'text-indigo-600' },
-  { id: 'distributor', key: 'distributor', path: '/distributor/dev', icon: '🤝', color: 'text-slate-600' },
+  { id: 'distributor', key: 'distributor', path: '/distributor/login', icon: '🤝', color: 'text-slate-600' },
   { id: 'india', key: 'india', path: '/website-india/dev', icon: '🇮🇳', color: 'text-orange-600' },
   { id: 'germany', key: 'germany', path: '/website-germany/dev', icon: '🇩🇪', color: 'text-red-600' },
 ];

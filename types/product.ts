@@ -9,6 +9,11 @@ export interface ProductPrice {
 
 export type ProductStatus = 'Active' | 'Inactive';
 
+export interface ProductStock {
+  country: CountryCode;
+  amount: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -21,7 +26,8 @@ export interface Product {
   countries: CountryCode[];
   prices: ProductPrice[];
   createdAt: string;
-  stock: number; // Added stock property
+  stocks: ProductStock[]; // Changed from stock: number
+  addedBy?: string; // ID of distributor or 'admin'
   
   // FAQ fields
   howToUse?: string;

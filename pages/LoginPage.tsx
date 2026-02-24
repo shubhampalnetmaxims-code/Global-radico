@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getDistributors } from '../data/mockDistributors';
 
 interface Field {
   name: string;
@@ -14,9 +15,10 @@ interface LoginPageProps {
   redirectPath: string;
   validUser?: string;
   validPass?: string;
+  loginType?: 'admin' | 'distributor';
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ title, fields, redirectPath, validUser, validPass }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ title, fields, redirectPath, validUser, validPass, loginType = 'admin' }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
@@ -33,15 +35,37 @@ const LoginPage: React.FC<LoginPageProps> = ({ title, fields, redirectPath, vali
     const inputUser = formData[fields[0].name];
     const inputPass = formData[fields[1].name];
 
-    if (validUser && validPass) {
-      if (inputUser === validUser && inputPass === validPass) {
-        navigate(redirectPath);
+    if (loginType === 'admin') {
+      if (validUser && validPass) {
+        if (inputUser.toLowerCase() === validUser.toLowerCase() && inputPass === validPass) {
+          navigate(redirectPath);
+        } else {
+          setError("Invalid admin credentials.");
+        }
       } else {
-        setError("Invalid credentials. Please try again.");
+        navigate(redirectPath);
       }
-    } else {
-      // If no creds defined, just proceed (e.g. for development mode)
-      navigate(redirectPath);
+    } else if (loginType === 'distributor') {
+      // Check distributors
+      const distributors = getDistributors();
+      
+      const dist = distributors.find((d: any) => d.email.toLowerCase() === inputUser.toLowerCase() && d.password === inputPass);
+      
+      if (dist) {
+        if (dist.status === 'blocked') {
+          setError("Your account has been blocked. Please contact admin.");
+          return;
+        }
+        // Set session
+        localStorage.setItem('distributor_session', JSON.stringify({
+          email: dist.email,
+          country: dist.assignedCountry
+        }));
+        // Redirect to their specific country dashboard
+        navigate(`/distributor/${dist.assignedCountry.toLowerCase()}/overview`);
+      } else {
+        setError("Invalid distributor credentials.");
+      }
     }
   };
 
@@ -93,19 +117,47 @@ const LoginPage: React.FC<LoginPageProps> = ({ title, fields, redirectPath, vali
               </button>
             </form>
 
-            {(validUser || validPass) && (
+            {(validUser || validPass || loginType === 'distributor') && (
               <div className="mt-10 p-4 bg-slate-50 rounded-2xl border border-slate-100 border-dashed">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 text-center">Demo Credentials</p>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-400">User:</span>
-                    <span className="font-mono text-slate-900 font-bold">{validUser}</span>
+                {loginType === 'distributor' ? (
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">India Distributor</p>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-400">User:</span>
+                        <span className="font-mono text-slate-900 font-bold">rajesh@radiomall.in</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-400">Pass:</span>
+                        <span className="font-mono text-slate-900 font-bold">pass_india</span>
+                      </div>
+                    </div>
+                    <div className="h-px bg-slate-200" />
+                    <div className="space-y-1">
+                      <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Germany Distributor</p>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-400">User:</span>
+                        <span className="font-mono text-slate-900 font-bold">Germany@gmail.com</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-400">Pass:</span>
+                        <span className="font-mono text-slate-900 font-bold">pass_germany</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-400">Pass:</span>
-                    <span className="font-mono text-slate-900 font-bold">{validPass}</span>
+                ) : (
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-400">User:</span>
+                      <span className="font-mono text-slate-900 font-bold">{validUser}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-400">Pass:</span>
+                      <span className="font-mono text-slate-900 font-bold">{validPass}</span>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>

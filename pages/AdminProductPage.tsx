@@ -34,6 +34,7 @@ const AdminProductPage: React.FC = () => {
     images: [],
     countries: [],
     prices: [],
+    stocks: [],
     howToUse: '',
     howToUse_de: '',
     whatsInside: '',
@@ -71,6 +72,7 @@ const AdminProductPage: React.FC = () => {
         images: [], 
         countries: [], 
         prices: [],
+        stocks: [],
         howToUse: '',
         howToUse_de: '',
         whatsInside: '',
@@ -87,7 +89,7 @@ const AdminProductPage: React.FC = () => {
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+    const files = Array.from(e.target.files || []) as File[];
     files.forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -110,19 +112,22 @@ const AdminProductPage: React.FC = () => {
   const toggleCountryVisibility = (country: CountryCode) => {
     const currentCountries = formData.countries || [];
     const currentPrices = formData.prices || [];
+    const currentStocks = formData.stocks || [];
     
     if (currentCountries.includes(country)) {
       setFormData({
         ...formData,
         countries: currentCountries.filter(c => c !== country),
-        prices: currentPrices.filter(p => p.country !== country)
+        prices: currentPrices.filter(p => p.country !== country),
+        stocks: currentStocks.filter(s => s.country !== country)
       });
     } else {
       const currency = country === 'India' ? 'INR' : 'EUR';
       setFormData({
         ...formData,
         countries: [...currentCountries, country],
-        prices: [...currentPrices, { country, amount: 0, currency }]
+        prices: [...currentPrices, { country, amount: 0, currency }],
+        stocks: [...currentStocks, { country, amount: 0 }]
       });
     }
   };
@@ -132,6 +137,15 @@ const AdminProductPage: React.FC = () => {
       ...formData,
       prices: (formData.prices || []).map(p => 
         p.country === country ? { ...p, amount } : p
+      )
+    });
+  };
+
+  const updateStockAmount = (country: CountryCode, amount: number) => {
+    setFormData({
+      ...formData,
+      stocks: (formData.stocks || []).map(s => 
+        s.country === country ? { ...s, amount } : s
       )
     });
   };
@@ -284,40 +298,44 @@ const AdminProductPage: React.FC = () => {
               <div className="space-y-8">
                 <h3 className="text-xl font-black text-slate-900">Market Pricing & Inventory</h3>
                 <div className="space-y-6">
-                  {/* Stock Level - Added Global Stock Input */}
-                  <div className="p-8 bg-indigo-900 text-white rounded-[2.5rem] shadow-2xl flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-black uppercase tracking-widest opacity-60">Inventory Control</p>
-                      <h4 className="text-xl font-black">Stock Level</h4>
-                    </div>
-                    <div className="flex items-center gap-4">
-                       <input 
-                        type="number" 
-                        value={formData.stock} 
-                        onChange={(e) => setFormData({...formData, stock: parseInt(e.target.value) || 0})}
-                        className="w-24 px-4 py-3 bg-white/10 border border-white/20 rounded-2xl text-center font-black text-white focus:ring-2 focus:ring-white focus:outline-none"
-                      />
-                      <span className="font-bold text-xs">Units</span>
-                    </div>
-                  </div>
-
-                  {formData.countries?.length ? formData.prices?.map(p => (
-                    <div key={p.country} className="p-6 bg-slate-50 rounded-[2rem] flex items-center justify-between">
-                      <div>
-                        <p className="text-xs font-black text-slate-900">{p.country} Price ({p.currency})</p>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Local Store Rate</p>
+                  {formData.countries?.length ? formData.prices?.map(p => {
+                    const countryStock = (formData.stocks || []).find(s => s.country === p.country);
+                    return (
+                      <div key={p.country} className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 space-y-6">
+                        <div className="flex items-center gap-3 border-b border-slate-200 pb-4">
+                          <span className="text-2xl">{p.country === 'India' ? '🇮🇳' : '🇩🇪'}</span>
+                          <h4 className="font-black text-slate-900 uppercase tracking-widest text-sm">{p.country} Store Configuration</h4>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Price ({p.currency})</label>
+                            <div className="relative">
+                              <input 
+                                type="number" 
+                                value={p.amount} 
+                                onChange={(e) => updatePriceAmount(p.country, parseFloat(e.target.value))} 
+                                className="w-full px-5 py-3 bg-white border border-slate-200 rounded-2xl font-black text-indigo-600 focus:ring-2 focus:ring-indigo-500" 
+                              />
+                              <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-300 text-[10px]">{p.currency}</span>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Stock Level</label>
+                            <div className="relative">
+                              <input 
+                                type="number" 
+                                value={countryStock?.amount || 0} 
+                                onChange={(e) => updateStockAmount(p.country, parseInt(e.target.value) || 0)} 
+                                className="w-full px-5 py-3 bg-white border border-slate-200 rounded-2xl font-black text-slate-900 focus:ring-2 focus:ring-indigo-500" 
+                              />
+                              <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-300 text-[10px]">UNITS</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <input 
-                          type="number" 
-                          value={p.amount} 
-                          onChange={(e) => updatePriceAmount(p.country, parseFloat(e.target.value))} 
-                          className="w-32 px-4 py-2 bg-white border border-slate-200 rounded-xl font-black text-indigo-600 focus:ring-2 focus:ring-indigo-500 text-right" 
-                        />
-                        <span className="font-bold text-slate-400 text-xs">{p.currency}</span>
-                      </div>
-                    </div>
-                  )) : (
+                    );
+                  }) : (
                     <div className="p-12 text-center border-2 border-dashed border-slate-100 rounded-[2rem]">
                       <p className="text-sm font-bold text-slate-300 uppercase tracking-widest">Please select visibility in Step 1</p>
                     </div>
@@ -415,8 +433,12 @@ const AdminProductPage: React.FC = () => {
                     <span className="text-sm font-bold text-slate-900">{formData.name || 'Not set'}</span>
                   </div>
                   <div className="flex justify-between items-center py-3 border-b border-slate-200">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Stock Level</span>
-                    <span className="text-sm font-bold text-slate-900">{formData.stock} Units</span>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Stock Levels</span>
+                    <div className="text-right">
+                      {formData.stocks?.map(s => (
+                        <p key={s.country} className="text-sm font-bold text-slate-900">{s.country}: {s.amount} Units</p>
+                      ))}
+                    </div>
                   </div>
                   <div className="flex justify-between items-center py-3 border-b border-slate-200">
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Visibility</span>
@@ -519,9 +541,16 @@ const AdminProductPage: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-6 py-5 text-center">
-                    <span className={`text-xs font-black ${prod.stock <= 5 ? 'text-red-500' : 'text-slate-900'}`}>
-                      {prod.stock}
-                    </span>
+                    <div className="flex flex-col gap-1 items-center">
+                      {prod.stocks?.map(s => (
+                        <div key={s.country} className="flex items-center gap-2">
+                          <span className="text-[8px] font-black text-slate-400 uppercase">{s.country.substring(0,2)}:</span>
+                          <span className={`text-xs font-black ${s.amount <= 5 ? 'text-red-500' : 'text-slate-900'}`}>
+                            {s.amount}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </td>
                   <td className="px-6 py-5">
                     <div className="flex gap-2 flex-wrap">

@@ -57,11 +57,14 @@ const generateMockProducts = (): Product[] => {
 
   rawData.forEach((p, i) => {
     const prices: any[] = [];
+    const stocks: any[] = [];
     if (p.countries.includes('India')) {
       prices.push({ country: 'India', amount: 350 + (i * 15), currency: 'INR' });
+      stocks.push({ country: 'India', amount: p.stock });
     }
     if (p.countries.includes('Germany')) {
       prices.push({ country: 'Germany', amount: 14 + (i % 5), currency: 'EUR' });
+      stocks.push({ country: 'Germany', amount: Math.floor(p.stock / 2) });
     }
 
     products.push({
@@ -76,6 +79,7 @@ const generateMockProducts = (): Product[] => {
       countries: p.countries as any,
       createdAt: '2023-11-20',
       prices: prices,
+      stocks: stocks,
       howToUse: p.how,
       howToUse_de: p.how_de,
       whatsInside: p.inside,
@@ -83,8 +87,7 @@ const generateMockProducts = (): Product[] => {
       ingredients: p.ing,
       ingredients_de: p.ing_de,
       benefits: p.ben,
-      benefits_de: p.ben_de,
-      stock: p.stock
+      benefits_de: p.ben_de
     });
   });
 

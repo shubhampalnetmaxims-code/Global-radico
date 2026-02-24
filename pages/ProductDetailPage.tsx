@@ -70,7 +70,25 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ country, initialL
 
   const name = lang === 'DE' ? (product.name_de || product.name) : product.name;
   const desc = lang === 'DE' ? (product.description_de || product.description) : product.description;
-  const price = product.prices.find(p => p.country === country);
+  
+  const currentStock = product.stocks?.find(s => s.country === country)?.amount || 0;
+
+  // Price logic: Check for distributor-set price first
+  const basePrice = product.prices.find(p => p.country === country);
+  const [displayPrice, setDisplayPrice] = useState<{ amount: number; currency: string } | null>(basePrice || null);
+
+  useEffect(() => {
+    const savedPrices = localStorage.getItem(`dist_prices_${country}`);
+    if (savedPrices) {
+      const distPrices = JSON.parse(savedPrices);
+      const customPrice = distPrices.find((p: any) => p.productId === product.id);
+      if (customPrice) {
+        setDisplayPrice({ amount: customPrice.newPrice, currency: customPrice.currency });
+      } else {
+        setDisplayPrice(basePrice || null);
+      }
+    }
+  }, [product.id, country, basePrice]);
 
   const faqItems = [
     { id: 'how', label: t.how, content: lang === 'DE' ? product.howToUse_de : product.howToUse },
@@ -79,15 +97,15 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ country, initialL
     { id: 'benefits', label: t.benefits, content: lang === 'DE' ? product.benefits_de : product.benefits },
   ];
 
-  const stockStatus = product.stock > 10 ? t.inStock : product.stock > 0 ? t.lowStock : t.outOfStock;
-  const stockColor = product.stock > 10 ? 'bg-emerald-100 text-emerald-700' : product.stock > 0 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700';
+  const stockStatus = currentStock > 10 ? t.inStock : currentStock > 0 ? t.lowStock : t.outOfStock;
+  const stockColor = currentStock > 10 ? 'bg-emerald-100 text-emerald-700' : currentStock > 0 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700';
 
   const handleAddToCart = () => {
     alert(`Added ${quantity} units of ${name} to your cart!`);
   };
 
   const incrementQty = () => {
-    if (quantity < product.stock) setQuantity(prev => prev + 1);
+    if (quantity < currentStock) setQuantity(prev => prev + 1);
   };
 
   const decrementQty = () => {
@@ -117,7 +135,7 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ country, initialL
             </button>
             <div className="aspect-[1/1] rounded-[3.5rem] overflow-hidden bg-slate-50 border border-slate-100 shadow-2xl relative">
               <img src={product.images[0]} alt={name} className="w-full h-full object-cover" />
-              {product.stock === 0 && (
+              {currentStock === 0 && (
                 <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] flex items-center justify-center">
                    <span className="bg-red-600 text-white px-8 py-3 rounded-2xl font-black uppercase tracking-widest text-sm shadow-2xl rotate-[-5deg]">
                      {t.outOfStock}
@@ -141,7 +159,7 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ country, initialL
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${stockColor}`}>
-                  {stockStatus} ({product.stock} {t.units})
+                  {stockStatus} ({currentStock} {t.units})
                 </span>
                 <span className="text-slate-300">•</span>
                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t.market}: {country}</span>
@@ -150,7 +168,7 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ country, initialL
               <p className="text-lg text-slate-500 font-medium leading-relaxed max-w-lg">{desc}</p>
               <div className="pt-4 flex items-center justify-between border-b border-slate-100 pb-8">
                  <p className="text-4xl font-black text-indigo-600 leading-none">
-                  {price ? `${price.amount} ${price.currency}` : 'N/A'}
+                  {displayPrice ? `${displayPrice.amount.toFixed(2)} ${displayPrice.currency}` : 'N/A'}
                  </p>
                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Global Organic Standard</p>
               </div>
@@ -164,7 +182,7 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ country, initialL
                   <div className="inline-flex items-center bg-slate-50 p-1.5 rounded-2xl border border-slate-100 shadow-inner">
                     <button 
                       onClick={decrementQty}
-                      disabled={product.stock === 0}
+                      disabled={currentStock === 0}
                       className="w-10 h-10 flex items-center justify-center bg-white rounded-xl text-slate-900 font-black border border-slate-100 shadow-sm active:scale-90 transition-all disabled:opacity-50"
                     >
                       -
@@ -172,15 +190,15 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ country, initialL
                     <span className="w-14 text-center font-black text-slate-900">{quantity}</span>
                     <button 
                       onClick={incrementQty}
-                      disabled={product.stock === 0 || quantity >= product.stock}
+                      disabled={currentStock === 0 || quantity >= currentStock}
                       className="w-10 h-10 flex items-center justify-center bg-white rounded-xl text-slate-900 font-black border border-slate-100 shadow-sm active:scale-90 transition-all disabled:opacity-50"
                     >
                       +
                     </button>
                   </div>
-                  {product.stock > 0 && (
+                  {currentStock > 0 && (
                     <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
-                      Max: {product.stock} {t.units}
+                      Max: {currentStock} {t.units}
                     </p>
                   )}
                 </div>
@@ -188,9 +206,9 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ country, initialL
 
               <button 
                 onClick={handleAddToCart}
-                disabled={product.stock === 0}
+                disabled={currentStock === 0}
                 className={`w-full md:w-auto px-16 py-5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-3 ${
-                  product.stock === 0 
+                  currentStock === 0 
                   ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
                   : 'bg-slate-900 text-white hover:bg-indigo-600'
                 }`}

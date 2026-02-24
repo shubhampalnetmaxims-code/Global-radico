@@ -11,6 +11,7 @@ export interface Category {
   countries: CountryCode[];
   status: 'Active' | 'Inactive';
   createdAt: string;
+  addedBy?: string; // ID of distributor or 'admin'
 }
 
 export const AVAILABLE_COUNTRIES: CountryCode[] = ['India' as const, 'Germany' as const];

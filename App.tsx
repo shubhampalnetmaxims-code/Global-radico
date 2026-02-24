@@ -10,8 +10,34 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import AdminCategoryPage from './pages/AdminCategoryPage';
 import AdminBannerPage from './pages/AdminBannerPage';
 import AdminProductPage from './pages/AdminProductPage';
+import AdminDistributorPage from './pages/AdminDistributorPage';
+import DistributorDashboard from './pages/DistributorDashboard';
 import Layout from './components/Layout';
 import AdminLayout from './components/AdminLayout';
+import { useParams } from 'react-router-dom';
+
+const DistributorSessionWrapper: React.FC = () => {
+  const { countryCode, tab } = useParams<{ countryCode: string; tab?: string }>();
+  const sessionStr = localStorage.getItem('distributor_session');
+  
+  if (!sessionStr) {
+    return <Navigate to="/distributor/login" replace />;
+  }
+
+  const session = JSON.parse(sessionStr);
+  const country = countryCode?.charAt(0).toUpperCase() + countryCode?.slice(1).toLowerCase();
+
+  // If the URL country doesn't match session country, redirect to correct one
+  if (country !== session.country) {
+    return <Navigate to={`/distributor/${session.country.toLowerCase()}/overview`} replace />;
+  }
+
+  if (!tab) {
+    return <Navigate to={`/distributor/${countryCode}/overview`} replace />;
+  }
+
+  return <DistributorDashboard country={session.country} distributorEmail={session.email} />;
+};
 
 const App: React.FC = () => {
   return (
@@ -30,6 +56,7 @@ const App: React.FC = () => {
                 redirectPath="/admin/categories" 
                 validUser="Radico@gmail.com"
                 validPass="!@#$%^"
+                loginType="admin"
               />
             </Layout>
           } 
@@ -69,6 +96,14 @@ const App: React.FC = () => {
             </AdminLayout>
           } 
         />
+        <Route 
+          path="/admin/distributors" 
+          element={
+            <AdminLayout>
+              <AdminDistributorPage />
+            </AdminLayout>
+          } 
+        />
 
         {/* Website Routes */}
         <Route 
@@ -105,12 +140,19 @@ const App: React.FC = () => {
               <LoginPage 
                 title="Distributor Login" 
                 fields={[{ name: 'distributorId', label: 'Email/ID', type: 'text' }, { name: 'password', label: 'Password', type: 'password' }]} 
-                redirectPath="/distributor/dev" 
-                validUser="Germany@gmail.com"
-                validPass="!@#$%^"
+                redirectPath="/distributor/india" 
+                loginType="distributor"
               />
             </Layout>
           } 
+        />
+        <Route 
+          path="/distributor/:countryCode" 
+          element={<DistributorSessionWrapper />} 
+        />
+        <Route 
+          path="/distributor/:countryCode/:tab" 
+          element={<DistributorSessionWrapper />} 
         />
         <Route 
           path="/distributor/dev" 

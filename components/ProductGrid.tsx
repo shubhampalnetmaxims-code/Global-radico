@@ -15,6 +15,18 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, country, lang }) =>
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [priceSort, setPriceSort] = useState<'asc' | 'desc' | 'none'>('none');
+  const [distPrices, setDistPrices] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    const saved = localStorage.getItem(`dist_prices_${country}`);
+    if (saved) setDistPrices(JSON.parse(saved));
+  }, [country]);
+
+  const getPrice = (product: Product) => {
+    const custom = distPrices.find(p => p.productId === product.id);
+    if (custom) return { amount: custom.newPrice, currency: custom.currency };
+    return product.prices.find(p => p.country === country);
+  };
 
   const t = {
     EN: {
@@ -54,8 +66,8 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, country, lang }) =>
       })
       .sort((a, b) => {
         if (priceSort === 'none') return 0;
-        const priceA = a.prices.find(pr => pr.country === country)?.amount || 0;
-        const priceB = b.prices.find(pr => pr.country === country)?.amount || 0;
+        const priceA = getPrice(a)?.amount || 0;
+        const priceB = getPrice(b)?.amount || 0;
         return priceSort === 'asc' ? priceA - priceB : priceB - priceA;
       });
   }, [products, searchQuery, priceSort, country, lang]);
@@ -97,7 +109,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, country, lang }) =>
       {filteredProducts.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {filteredProducts.map((product) => {
-            const price = product.prices.find(p => p.country === country);
+            const price = getPrice(product);
             const name = lang === 'DE' ? (product.name_de || product.name) : product.name;
             const desc = lang === 'DE' ? (product.description_de || product.description) : product.description;
             
@@ -127,7 +139,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, country, lang }) =>
                     <div className="text-left">
                       <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">{t.localMarket}</p>
                       <p className="text-lg font-black text-indigo-600 leading-none">
-                        {price ? `${price.amount} ${price.currency}` : 'N/A'}
+                        {price ? `${price.amount.toFixed(2)} ${price.currency}` : 'N/A'}
                       </p>
                     </div>
                     <button 
