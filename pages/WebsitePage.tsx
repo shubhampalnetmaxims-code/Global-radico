@@ -7,6 +7,7 @@ import { CountryCode, Category } from '../types/category';
 import { getBanners } from '../data/mockBanners';
 import { getCategories } from '../data/mockCategories';
 import { Banner } from '../types/banner';
+import { useCart } from '../components/CartContext';
 
 interface WebsitePageProps {
   siteTitle: string;
@@ -43,17 +44,37 @@ const WebsitePage: React.FC<WebsitePageProps> = ({
   isGermany = false 
 }) => {
   const navigate = useNavigate();
+  const { language: contextLang, setLanguage: setContextLang } = useCart();
   const getInitialLang = () => (isGermany ? 'DE' : 'EN');
   
-  const [lang, setLang] = useState<Language>(getInitialLang());
+  // Force India to English, otherwise use context or default
+  const [lang, setLang] = useState<Language>(() => {
+    if (!isGermany) return 'EN';
+    return contextLang || getInitialLang();
+  });
   const [banners, setBanners] = useState<Banner[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const currentCountry: CountryCode = isGermany ? 'Germany' : 'India';
   const t = contentTranslations[lang];
 
   useEffect(() => {
-    setLang(getInitialLang());
-  }, [isGermany]);
+    // Force India to EN if it's somehow set to DE in context
+    if (!isGermany && contextLang !== 'EN') {
+      setContextLang('EN');
+      setLang('EN');
+      return;
+    }
+
+    // Sync local lang with context lang if it changes externally
+    if (contextLang && contextLang !== lang) {
+      setLang(contextLang);
+    }
+  }, [contextLang, lang, isGermany, setContextLang]);
+
+  const handleLangChange = (newLang: Language) => {
+    setLang(newLang);
+    setContextLang(newLang);
+  };
 
   useEffect(() => {
     setBanners(getBanners());
@@ -70,7 +91,7 @@ const WebsitePage: React.FC<WebsitePageProps> = ({
     <div className="flex flex-col min-h-screen bg-white">
       <SiteHeader 
         lang={lang}
-        setLang={setLang}
+        setLang={handleLangChange}
         showLanguageToggle={isGermany} 
         country={currentCountry}
       />

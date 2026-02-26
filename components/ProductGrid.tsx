@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Product } from '../types/product';
 import { CountryCode } from '../types/category';
 import { Language } from './SiteHeader';
+import { useCart } from './CartContext';
 
 interface ProductGridProps {
   products: Product[];
@@ -13,6 +14,7 @@ interface ProductGridProps {
 
 const ProductGrid: React.FC<ProductGridProps> = ({ products, country, lang }) => {
   const navigate = useNavigate();
+  const { addToCart } = useCart();
   const [searchQuery, setSearchQuery] = useState('');
   const [priceSort, setPriceSort] = useState<'asc' | 'desc' | 'none'>('none');
   const [distPrices, setDistPrices] = useState<any[]>([]);
@@ -143,7 +145,20 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, country, lang }) =>
                       </p>
                     </div>
                     <button 
-                      onClick={(e) => { e.stopPropagation(); alert('Added to cart!'); }}
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        if (price) {
+                          addToCart({
+                            productId: product.id,
+                            product,
+                            quantity: 1,
+                            price: price.amount,
+                            currency: price.currency
+                          });
+                          const basePath = country === 'India' ? 'website-india' : 'website-germany';
+                          navigate(`/${basePath}/cart`);
+                        }
+                      }}
                       className="w-12 h-12 bg-slate-900 text-white rounded-2xl flex items-center justify-center hover:bg-indigo-600 transition-colors shadow-lg active:scale-90" 
                       title={t.quickAdd}
                     >

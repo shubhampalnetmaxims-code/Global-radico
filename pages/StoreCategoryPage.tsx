@@ -8,6 +8,7 @@ import { getProducts } from '../data/mockProducts';
 import { getCategories } from '../data/mockCategories';
 import { Product } from '../types/product';
 import { Category } from '../types/category';
+import { useCart } from '../components/CartContext';
 
 interface StoreCategoryPageProps {
   country: CountryCode;
@@ -17,9 +18,33 @@ interface StoreCategoryPageProps {
 const StoreCategoryPage: React.FC<StoreCategoryPageProps> = ({ country, initialLanguage }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [lang, setLang] = useState<Language>(initialLanguage);
+  const { language: contextLang, setLanguage: setContextLang } = useCart();
+  const isIndia = country === 'India';
+  const [lang, setLang] = useState<Language>(() => {
+    if (isIndia) return 'EN';
+    return contextLang || initialLanguage;
+  });
   const [category, setCategory] = useState<Category | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    // Force India to EN if it's somehow set to DE in context
+    if (isIndia && contextLang !== 'EN') {
+      setContextLang('EN');
+      setLang('EN');
+      return;
+    }
+
+    // Sync local lang with context lang if it changes externally
+    if (contextLang && contextLang !== lang) {
+      setLang(contextLang);
+    }
+  }, [contextLang, lang, isIndia, setContextLang]);
+
+  const handleLangChange = (newLang: Language) => {
+    setLang(newLang);
+    setContextLang(newLang);
+  };
 
   const t = {
     EN: {
@@ -38,7 +63,7 @@ const StoreCategoryPage: React.FC<StoreCategoryPageProps> = ({ country, initialL
     const allCats = getCategories();
     const foundCat = allCats.find(c => c.id === id);
     if (!foundCat || !foundCat.countries.includes(country) || foundCat.status !== 'Active') {
-      navigate(country === 'India' ? '/website-india/dev' : '/website-germany/dev');
+      navigate(country === 'India' ? '/website-india' : '/website-germany');
       return;
     }
     setCategory(foundCat);
@@ -61,7 +86,7 @@ const StoreCategoryPage: React.FC<StoreCategoryPageProps> = ({ country, initialL
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <SiteHeader 
         lang={lang} 
-        setLang={setLang} 
+        setLang={handleLangChange} 
         showLanguageToggle={country === 'Germany'} 
         country={country} 
       />
@@ -70,7 +95,7 @@ const StoreCategoryPage: React.FC<StoreCategoryPageProps> = ({ country, initialL
         <header className="space-y-6 text-center animate-in slide-in-from-top-4 duration-700">
           <div className="flex items-center justify-center gap-2">
             <button 
-              onClick={() => navigate(country === 'India' ? '/website-india/dev' : '/website-germany/dev')}
+              onClick={() => navigate(country === 'India' ? '/website-india' : '/website-germany')}
               className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline"
             >
               ← {t.back}

@@ -5,6 +5,7 @@ import SiteHeader, { Language } from '../components/SiteHeader';
 import { Product } from '../types/product';
 import { getProducts } from '../data/mockProducts';
 import { CountryCode } from '../types/category';
+import { useCart } from '../components/CartContext';
 
 interface ProductDetailPageProps {
   country: CountryCode;
@@ -14,16 +15,38 @@ interface ProductDetailPageProps {
 const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ country, initialLanguage }) => {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
+  const { addToCart } = useCart();
   const [lang, setLang] = useState<Language>(initialLanguage);
   const [product, setProduct] = useState<Product | null>(null);
   const [activeFaq, setActiveFaq] = useState<string | null>('how');
   const [quantity, setQuantity] = useState(1);
 
+  // Price logic: Check for distributor-set price first
+  const basePrice = product?.prices.find(p => p.country === country);
+  const [displayPrice, setDisplayPrice] = useState<{ amount: number; currency: string } | null>(null);
+
+  useEffect(() => {
+    if (!product) return;
+    
+    const savedPrices = localStorage.getItem(`dist_prices_${country}`);
+    if (savedPrices) {
+      const distPrices = JSON.parse(savedPrices);
+      const customPrice = distPrices.find((p: any) => p.productId === product.id);
+      if (customPrice) {
+        setDisplayPrice({ amount: customPrice.newPrice, currency: customPrice.currency });
+      } else {
+        setDisplayPrice(basePrice || null);
+      }
+    } else {
+      setDisplayPrice(basePrice || null);
+    }
+  }, [product?.id, country, basePrice]);
+
   useEffect(() => {
     const allProducts = getProducts();
     const found = allProducts.find(p => p.id === productId && p.countries.includes(country));
     if (!found) {
-      navigate(country === 'India' ? '/website-india/dev' : '/website-germany/dev');
+      navigate(country === 'India' ? '/website-india' : '/website-germany');
       return;
     }
     setProduct(found);
@@ -72,23 +95,7 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ country, initialL
   const desc = lang === 'DE' ? (product.description_de || product.description) : product.description;
   
   const currentStock = product.stocks?.find(s => s.country === country)?.amount || 0;
-
-  // Price logic: Check for distributor-set price first
-  const basePrice = product.prices.find(p => p.country === country);
-  const [displayPrice, setDisplayPrice] = useState<{ amount: number; currency: string } | null>(basePrice || null);
-
-  useEffect(() => {
-    const savedPrices = localStorage.getItem(`dist_prices_${country}`);
-    if (savedPrices) {
-      const distPrices = JSON.parse(savedPrices);
-      const customPrice = distPrices.find((p: any) => p.productId === product.id);
-      if (customPrice) {
-        setDisplayPrice({ amount: customPrice.newPrice, currency: customPrice.currency });
-      } else {
-        setDisplayPrice(basePrice || null);
-      }
-    }
-  }, [product.id, country, basePrice]);
+  const basePath = country === 'India' ? 'website-india' : 'website-germany';
 
   const faqItems = [
     { id: 'how', label: t.how, content: lang === 'DE' ? product.howToUse_de : product.howToUse },
@@ -101,7 +108,15 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ country, initialL
   const stockColor = currentStock > 10 ? 'bg-emerald-100 text-emerald-700' : currentStock > 0 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700';
 
   const handleAddToCart = () => {
-    alert(`Added ${quantity} units of ${name} to your cart!`);
+    if (!product || !displayPrice) return;
+    addToCart({
+      productId: product.id,
+      product,
+      quantity,
+      price: displayPrice.amount,
+      currency: displayPrice.currency
+    });
+    navigate(`/${basePath}/cart`);
   };
 
   const incrementQty = () => {

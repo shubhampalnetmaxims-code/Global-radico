@@ -59,13 +59,13 @@ const LandingPage: React.FC = () => {
     { 
       label: t.india, 
       color: 'bg-orange-600', 
-      path: '/website-india/dev',
+      path: '/website-india',
       desc: t.indiaDesc
     },
     { 
       label: t.germany, 
       color: 'bg-red-600', 
-      path: '/website-germany/dev',
+      path: '/website-germany',
       desc: t.germanyDesc
     },
   ];
