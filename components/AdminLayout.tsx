@@ -17,8 +17,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { label: 'Products', icon: '📦', path: '/admin/products' },
     { label: 'Banners', icon: '🖼️', path: '/admin/banners' },
     { label: 'Distributors', icon: '🤝', path: '/admin/distributors' },
-    { label: 'Orders', icon: '🛒', path: '#' },
-    { label: 'Users', icon: '👥', path: '#' },
+    { label: 'Orders', icon: '🛒', path: '/admin/orders' },
+    { label: 'Users', icon: '👥', path: '/admin/users' },
   ];
 
   return (

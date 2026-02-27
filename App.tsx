@@ -15,6 +15,7 @@ import DistributorDashboard from './pages/DistributorDashboard';
 import Layout from './components/Layout';
 import AdminLayout from './components/AdminLayout';
 import { useParams } from 'react-router-dom';
+import DistributorLayout from './components/DistributorLayout';
 import { CartProvider } from './components/CartContext';
 import CartPage from './pages/CartPage';
 import UserLoginPage from './pages/UserLoginPage';
@@ -23,6 +24,11 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
 import ProfilePage from './pages/ProfilePage';
 import InvoicePage from './pages/InvoicePage';
+import DistributorOrders from './pages/DistributorOrders';
+import SuperAdminUsers from './pages/SuperAdminUsers';
+import DistributorUsers from './pages/DistributorUsers';
+
+import SuperAdminOrders from './pages/SuperAdminOrders';
 
 const DistributorSessionWrapper: React.FC = () => {
   const { countryCode, tab } = useParams<{ countryCode: string; tab?: string }>();
@@ -136,11 +142,27 @@ const App: React.FC = () => {
             </AdminLayout>
           } 
         />
+          <Route 
+          path="/admin/orders" 
+          element={
+            <AdminLayout>
+              <SuperAdminOrders />
+            </AdminLayout>
+          } 
+        />
         <Route 
           path="/admin/distributors" 
           element={
             <AdminLayout>
               <AdminDistributorPage />
+            </AdminLayout>
+          } 
+        />
+        <Route 
+          path="/admin/users" 
+          element={
+            <AdminLayout>
+              <SuperAdminUsers />
             </AdminLayout>
           } 
         />
@@ -188,6 +210,14 @@ const App: React.FC = () => {
               />
             </Layout>
           } 
+        />
+        <Route 
+          path="/distributor/germany/orders" 
+          element={<DistributorLayout distributorName="Germany Distributor" country="Germany"><DistributorOrders /></DistributorLayout>} 
+        />
+        <Route 
+          path="/distributor/germany/users" 
+          element={<DistributorLayout distributorName="Germany Distributor" country="Germany"><DistributorUsers /></DistributorLayout>} 
         />
         <Route 
           path="/distributor/:countryCode" 

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../components/CartContext';
 import SiteHeader from '../components/SiteHeader';
-import { motion, AnimatePresence } from 'motion/react';
 import { Order } from '../types/ecommerce';
 
 const CheckoutPage: React.FC = () => {
@@ -111,9 +110,7 @@ const CheckoutPage: React.FC = () => {
       <main className="flex-grow max-w-5xl mx-auto w-full px-4 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+            <div 
               className="bg-white rounded-[3rem] shadow-xl border border-slate-100 p-10 space-y-8"
             >
               <header className="flex justify-between items-center">
@@ -148,12 +145,9 @@ const CheckoutPage: React.FC = () => {
                   </button>
                 ))}
               </div>
-            </motion.div>
+            </div>
 
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
+            <div 
               className="bg-white rounded-[3rem] shadow-xl border border-slate-100 p-10 space-y-8"
             >
               <h2 className="text-2xl font-black text-slate-900 tracking-tight">{t.orderItems}</h2>
@@ -171,13 +165,11 @@ const CheckoutPage: React.FC = () => {
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </div>
           </div>
 
           <div className="space-y-6">
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
+            <div 
               className="bg-slate-900 text-white p-10 rounded-[3rem] shadow-2xl space-y-8 sticky top-8"
             >
               <h3 className="text-xl font-black tracking-tight">{t.summary}</h3>
@@ -226,7 +218,7 @@ const CheckoutPage: React.FC = () => {
                   <>{t.pay} {(subtotal * 1.18).toFixed(2)} {currency}</>
                 )}
               </button>
-            </motion.div>
+            </div>
           </div>
         </div>
       </main>

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCart } from '../components/CartContext';
 import SiteHeader from '../components/SiteHeader';
-import { motion } from 'motion/react';
 import { Address } from '../types/ecommerce';
 
 const AddressManagementPage: React.FC = () => {
@@ -71,9 +70,7 @@ const AddressManagementPage: React.FC = () => {
       <SiteHeader lang={language} setLang={setLanguage} showLanguageToggle={country === 'Germany'} country={country} />
       
       <main className="flex-grow max-w-2xl mx-auto w-full px-4 py-12">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div 
           className="bg-white rounded-[3rem] shadow-2xl border border-slate-100 p-12 space-y-10"
         >
           <header className="text-center">
@@ -176,7 +173,7 @@ const AddressManagementPage: React.FC = () => {
               {t.save}
             </button>
           </form>
-        </motion.div>
+        </div>
       </main>
     </div>
   );

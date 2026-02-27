@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../components/CartContext';
 import SiteHeader from '../components/SiteHeader';
-import { motion } from 'motion/react';
 
 const CartPage: React.FC = () => {
   const { cart, updateQuantity, removeFromCart, user, language, country, setLanguage } = useCart();
@@ -56,9 +55,7 @@ const CartPage: React.FC = () => {
       <SiteHeader lang={language} setLang={setLanguage} showLanguageToggle={country === 'Germany'} country={country} />
       
       <main className="flex-grow max-w-5xl mx-auto w-full px-4 py-12">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div 
           className="space-y-8"
         >
           <header>
@@ -146,7 +143,7 @@ const CartPage: React.FC = () => {
               </div>
             </div>
           )}
-        </motion.div>
+        </div>
       </main>
     </div>
   );

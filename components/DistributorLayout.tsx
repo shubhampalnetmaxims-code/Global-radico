@@ -16,6 +16,8 @@ const DistributorLayout: React.FC<DistributorLayoutProps> = ({ children, distrib
     { label: 'Overview', icon: '🏠', path: `/distributor/${country.toLowerCase()}/overview` },
     { label: 'Categories', icon: '📁', path: `/distributor/${country.toLowerCase()}/categories` },
     { label: 'Products', icon: '📦', path: `/distributor/${country.toLowerCase()}/products` },
+    ...(country === 'Germany' ? [{ label: 'Orders', icon: '🛒', path: `/distributor/germany/orders` }] : []),
+    ...(country === 'Germany' ? [{ label: 'Users', icon: '👥', path: `/distributor/germany/users` }] : []),
   ];
 
   return (

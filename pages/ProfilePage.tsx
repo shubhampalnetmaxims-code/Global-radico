@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../components/CartContext';
 import SiteHeader from '../components/SiteHeader';
-import { motion, AnimatePresence } from 'motion/react';
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
@@ -134,13 +133,10 @@ const ProfilePage: React.FC = () => {
 
           {/* Content */}
           <div className="flex-grow">
-            <AnimatePresence mode="wait">
+            <div>
               {activeTab === 'profile' && (
-                <motion.div 
+                <div 
                   key="profile"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
                   className="bg-white rounded-[3rem] shadow-xl border border-slate-100 p-12 space-y-10"
                 >
                   <header>
@@ -165,15 +161,12 @@ const ProfilePage: React.FC = () => {
                   <button className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-indigo-600 transition-all">
                     {t.edit}
                   </button>
-                </motion.div>
+                </div>
               )}
 
               {activeTab === 'orders' && (
-                <motion.div 
+                <div 
                   key="orders"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
                   className="space-y-6"
                 >
                   <header>
@@ -216,15 +209,12 @@ const ProfilePage: React.FC = () => {
                       ))}
                     </div>
                   )}
-                </motion.div>
+                </div>
               )}
 
               {activeTab === 'addresses' && (
-                <motion.div 
+                <div 
                   key="addresses"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
                   className="space-y-8"
                 >
                   <header className="flex justify-between items-end">
@@ -265,9 +255,9 @@ const ProfilePage: React.FC = () => {
                       </div>
                     ))}
                   </div>
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
+            </div>
           </div>
         </div>
       </main>

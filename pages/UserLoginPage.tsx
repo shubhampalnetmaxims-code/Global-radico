@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCart } from '../components/CartContext';
 import SiteHeader from '../components/SiteHeader';
-import { motion, AnimatePresence } from 'motion/react';
 
 const UserLoginPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -73,18 +72,13 @@ const UserLoginPage: React.FC = () => {
       <SiteHeader lang={language} setLang={setLanguage} showLanguageToggle={country === 'Germany'} country={country} />
       
       <main className="flex-grow flex items-center justify-center p-4">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+        <div 
           className="w-full max-w-md bg-white rounded-[3rem] shadow-2xl border border-slate-100 p-12"
         >
-          <AnimatePresence mode="wait">
+          <div>
             {step === 'mobile' ? (
-              <motion.div 
+              <div 
                 key="mobile"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
                 className="space-y-8"
               >
                 <header className="text-center">
@@ -123,13 +117,10 @@ const UserLoginPage: React.FC = () => {
                     {t.sendOtp}
                   </button>
                 </form>
-              </motion.div>
+              </div>
             ) : (
-              <motion.div 
+              <div 
                 key="otp"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
                 className="space-y-8"
               >
                 <header className="text-center">
@@ -165,10 +156,10 @@ const UserLoginPage: React.FC = () => {
                     {t.changeNum}
                   </button>
                 </form>
-              </motion.div>
+              </div>
             )}
-          </AnimatePresence>
-        </motion.div>
+          </div>
+        </div>
       </main>
     </div>
   );

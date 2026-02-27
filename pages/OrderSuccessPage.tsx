@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCart } from '../components/CartContext';
 import SiteHeader from '../components/SiteHeader';
-import { motion } from 'motion/react';
 
 const OrderSuccessPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -57,9 +56,7 @@ const OrderSuccessPage: React.FC = () => {
       <SiteHeader lang={language} setLang={setLanguage} showLanguageToggle={country === 'Germany'} country={country} />
       
       <main className="flex-grow max-w-4xl mx-auto w-full px-4 py-12">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
+        <div 
           className="bg-white rounded-[4rem] shadow-2xl border border-slate-100 p-16 text-center space-y-12"
         >
           <div className="space-y-6">
@@ -120,7 +117,7 @@ const OrderSuccessPage: React.FC = () => {
               📦 {t.myOrders}
             </button>
           </div>
-        </motion.div>
+        </div>
       </main>
     </div>
   );
