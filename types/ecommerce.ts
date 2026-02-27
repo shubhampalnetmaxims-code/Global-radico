@@ -19,6 +19,7 @@ export interface User {
 
 export interface Address {
   id: string;
+  userId?: string;
   fullName: string;
   mobile: string;
   addressLine1: string;

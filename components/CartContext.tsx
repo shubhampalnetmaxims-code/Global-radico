@@ -46,7 +46,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [allData, setAllData] = useState<Record<CountryCode, CountryData>>(() => {
-    const saved = localStorage.getItem('radico_multi_country_data');
+    const saved = localStorage.getItem('radico_multi_country_data_v3');
     if (saved) return JSON.parse(saved);
 
     // Enhanced mock data
@@ -57,16 +57,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     ];
 
     const mockIndiaAddress1 = {
-      id: 'addr-in-1', fullName: 'Priya Sharma', addressLine1: '123, MG Road', city: 'Mumbai', state: 'Maharashtra', postalCode: '400001', country: 'India', mobile: '9876543210', isDefault: true
+      id: 'addr-in-1', userId: 'user-in-1', fullName: 'Priya Sharma', addressLine1: '123, MG Road', city: 'Mumbai', state: 'Maharashtra', postalCode: '400001', country: 'India', mobile: '9876543210', isDefault: true
     };
     const mockIndiaAddress2 = {
-      id: 'addr-in-2', fullName: 'Rahul Verma', addressLine1: '456, SV Road', city: 'Delhi', state: 'Delhi', postalCode: '110001', country: 'India', mobile: '9876543211', isDefault: false
+      id: 'addr-in-2', userId: 'user-in-1', fullName: 'Rahul Verma', addressLine1: '456, SV Road', city: 'Delhi', state: 'Delhi', postalCode: '110001', country: 'India', mobile: '9876543211', isDefault: false
+    };
+    const mockIndiaAddress3 = {
+      id: 'addr-in-3', userId: 'user-in-2', fullName: 'Rahul Verma', addressLine1: '789, Park Street', city: 'Kolkata', state: 'West Bengal', postalCode: '700016', country: 'India', mobile: '9876543211', isDefault: true
     };
     const mockGermanyAddress1 = {
-      id: 'addr-de-1', fullName: 'Klaus Müller', addressLine1: 'Musterstraße 45', city: 'Berlin', state: 'Berlin', postalCode: '10115', country: 'Germany', mobile: '015123456789', isDefault: true
+      id: 'addr-de-1', userId: 'user-de-1', fullName: 'Klaus Müller', addressLine1: 'Musterstraße 45', city: 'Berlin', state: 'Berlin', postalCode: '10115', country: 'Germany', mobile: '015123456789', isDefault: true
     };
     const mockGermanyAddress2 = {
-      id: 'addr-de-2', fullName: 'Anna Schmidt', addressLine1: 'Hauptstraße 10', city: 'Munich', state: 'Bavaria', postalCode: '80331', country: 'Germany', mobile: '015123456780', isDefault: false
+      id: 'addr-de-2', userId: 'user-de-1', fullName: 'Anna Schmidt', addressLine1: 'Hauptstraße 10', city: 'Munich', state: 'Bavaria', postalCode: '80331', country: 'Germany', mobile: '015123456780', isDefault: false
+    };
+    const mockGermanyAddress3 = {
+      id: 'addr-de-3', userId: 'user-de-2', fullName: 'Anna Schmidt', addressLine1: 'Bahnhofstraße 5', city: 'Hamburg', state: 'Hamburg', postalCode: '20095', country: 'Germany', mobile: '015123456780', isDefault: true
     };
 
     const mockIndiaUsers: User[] = [
@@ -78,7 +84,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const mockGermanyUsers: User[] = [
       { id: 'user-de-1', name: 'Klaus Müller', mobile: '+4915123456789', countryCode: 'Germany' },
       { id: 'user-de-2', name: 'Anna Schmidt', mobile: '+4915123456780', countryCode: 'Germany' },
-      { id: 'user-de-3', name: 'Lukas Weber', mobile: '+4915123456781', countryCode: 'Germany' }
+      { id: 'user-de-3', name: 'Lukas Weber', mobile: '+4915123456781', countryCode: 'Germany' },
+      { id: 'user-de-4', name: 'Sophie Wagner', mobile: '+4915123456782', countryCode: 'Germany' },
+      { id: 'user-de-5', name: 'Maximilian Becker', mobile: '+4915123456783', countryCode: 'Germany' }
     ];
 
     return {
@@ -86,7 +94,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         cart: [],
         user: mockIndiaUsers[0],
         users: mockIndiaUsers,
-        addresses: [mockIndiaAddress1, mockIndiaAddress2],
+        addresses: [mockIndiaAddress1, mockIndiaAddress2, mockIndiaAddress3],
         orders: [
           {
             id: 'ORD-IN-001', userId: 'user-in-1', items: [{ productId: '1', quantity: 2, price: 500, currency: 'INR', product: mockProducts[0] }],
@@ -115,7 +123,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         cart: [],
         user: mockGermanyUsers[0],
         users: mockGermanyUsers,
-        addresses: [mockGermanyAddress1, mockGermanyAddress2],
+        addresses: [mockGermanyAddress1, mockGermanyAddress2, mockGermanyAddress3],
         orders: [
           {
             id: 'ORD-DE-001', userId: 'user-de-1', items: [{ productId: '3', quantity: 3, price: 15, currency: 'EUR', product: mockProducts[2] }],
@@ -144,7 +152,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [country]);
 
   useEffect(() => {
-    localStorage.setItem('radico_multi_country_data', JSON.stringify(allData));
+    localStorage.setItem('radico_multi_country_data_v3', JSON.stringify(allData));
   }, [allData]);
 
   const currentData = allData[country] || { 
@@ -215,11 +223,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAllData(prev => {
       const countryData = prev[country] || { cart: [], user: null, users: [], addresses: [], orders: [], language: 'EN' };
       const prevAddresses = countryData.addresses;
+      
+      // Ensure address has userId if user is logged in
+      const addressWithUser = {
+        ...address,
+        userId: countryData.user?.id || address.userId
+      };
+
       let newAddresses;
-      if (address.isDefault) {
-        newAddresses = [...prevAddresses.map(a => ({ ...a, isDefault: false })), address];
+      if (addressWithUser.isDefault) {
+        newAddresses = [...prevAddresses.map(a => ({ ...a, isDefault: false })), addressWithUser];
       } else {
-        newAddresses = [...prevAddresses, address];
+        newAddresses = [...prevAddresses, addressWithUser];
       }
       return {
         ...prev,

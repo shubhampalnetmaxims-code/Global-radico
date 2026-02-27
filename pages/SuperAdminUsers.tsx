@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../components/CartContext';
 import { User } from '../types/ecommerce';
+import UserDetailsModal from '../components/UserDetailsModal';
 
 const SuperAdminUsers: React.FC = () => {
   const { allData } = useCart();
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [countryFilter, setCountryFilter] = useState<string>('All');
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   useEffect(() => {
     const indiaUsers = allData.India.users || [];
@@ -23,6 +25,22 @@ const SuperAdminUsers: React.FC = () => {
       setFilteredUsers(allUsers.filter(u => u.countryCode === countryFilter));
     }
   }, [countryFilter, allUsers]);
+
+  const handleUserClick = (user: User) => {
+    setSelectedUser(user);
+  };
+
+  const getUserData = (userId: string, countryCode: string) => {
+    // Map country code to CountryData key
+    const countryKey = countryCode === 'India' ? 'India' : 'Germany';
+    const countryData = allData[countryKey];
+    
+    if (!countryData) return { orders: [], addresses: [] };
+
+    const orders = countryData.orders?.filter(o => o.userId === userId) || [];
+    const addresses = countryData.addresses?.filter(a => a.userId === userId) || [];
+    return { orders, addresses };
+  };
 
   return (
     <div className="p-4 sm:p-8">
@@ -49,20 +67,45 @@ const SuperAdminUsers: React.FC = () => {
               <th scope="col" className="px-6 py-3">Name</th>
               <th scope="col" className="px-6 py-3">Mobile</th>
               <th scope="col" className="px-6 py-3">Country</th>
+              <th scope="col" className="px-6 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredUsers.map(user => (
-              <tr key={user.id} className="bg-white border-b hover:bg-slate-50">
+              <tr 
+                key={user.id} 
+                className="bg-white border-b hover:bg-slate-50 cursor-pointer"
+                onClick={() => handleUserClick(user)}
+              >
                 <td className="px-6 py-4 font-bold text-slate-900 whitespace-nowrap">{user.id}</td>
                 <td className="px-6 py-4">{user.name}</td>
                 <td className="px-6 py-4">{user.mobile}</td>
                 <td className="px-6 py-4">{user.countryCode}</td>
+                <td className="px-6 py-4 text-right">
+                  <button 
+                    className="text-indigo-600 hover:text-indigo-800 font-bold text-xs"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleUserClick(user);
+                    }}
+                  >
+                    View Details
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {selectedUser && (
+        <UserDetailsModal 
+          user={selectedUser} 
+          orders={getUserData(selectedUser.id, selectedUser.countryCode).orders}
+          addresses={getUserData(selectedUser.id, selectedUser.countryCode).addresses}
+          onClose={() => setSelectedUser(null)} 
+        />
+      )}
     </div>
   );
 };
